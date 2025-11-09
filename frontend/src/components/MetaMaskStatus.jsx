@@ -1,111 +1,101 @@
 import React, { useState, useEffect } from 'react'
-import { AlertCircle, CheckCircle, XCircle } from 'lucide-react'
+import { AlertCircle, CheckCircle, XCircle, Wallet } from 'lucide-react'
+import { useWallet } from '../contexts/WalletContext'
 
 const MetaMaskStatus = () => {
-  const [status, setStatus] = useState({
-    hasWindow: false,
-    hasEthereum: false,
-    isMetaMask: false,
-    otherWallets: []
-  })
+  const { hasMetaMask, detectedWallets, isConnected } = useWallet()
+  const [showDebug, setShowDebug] = useState(false)
 
-  useEffect(() => {
-    const checkStatus = () => {
-      const hasWindow = typeof window !== 'undefined'
-      const hasEthereum = typeof window.ethereum !== 'undefined'
-      const isMetaMask = window.ethereum?.isMetaMask || false
-      
-      // Check for other wallet extensions
-      const otherWallets = []
-      if (window.cardano) otherWallets.push('Cardano (Eternl/Nami)')
-      if (window.solana) otherWallets.push('Solana (Phantom)')
-      if (window.ethereum && !window.ethereum.isMetaMask) otherWallets.push('Other EVM wallet')
 
-      setStatus({
-        hasWindow,
-        hasEthereum,
-        isMetaMask,
-        otherWallets
-      })
-    }
-
-    checkStatus()
-    
-    // Recheck after delays to catch late injections
-    const timer1 = setTimeout(checkStatus, 500)
-    const timer2 = setTimeout(checkStatus, 1000)
-    const timer3 = setTimeout(checkStatus, 2000)
-
-    return () => {
-      clearTimeout(timer1)
-      clearTimeout(timer2)
-      clearTimeout(timer3)
-    }
-  }, [])
-
-  if (status.isMetaMask) {
-    return null // Don't show if MetaMask is detected
+  // Hide if connected and MetaMask is working (unless debug mode)
+  if (isConnected && hasMetaMask && !showDebug) {
+    return null
   }
 
+  const ethWallets = detectedWallets.filter(w => w.type === 'ethereum')
+  const nonEthWallets = detectedWallets.filter(w => w.type !== 'ethereum')
+
   return (
-    <div className="fixed bottom-2 right-2 left-2 sm:bottom-4 sm:right-4 sm:left-auto max-w-md bg-white border border-amber-200 rounded-lg shadow-lg p-3 sm:p-4 z-50">
-      <div className="flex items-start space-x-3">
-        <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
-        <div className="flex-1">
-          <h3 className="font-semibold text-primary-700 mb-2">
-            MetaMask Detection Status
+    <div className="bg-blue-50 border-l-4 border-blue-400 p-3 sm:p-4 mx-4 sm:mx-6 lg:mx-8 my-4 max-w-7xl">
+      <div className="flex flex-col sm:flex-row items-start">
+        <div className="flex-shrink-0">
+          <Wallet className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+        </div>
+        <div className="ml-0 sm:ml-3 mt-2 sm:mt-0 flex-1">
+          <h3 className="text-sm sm:text-base font-medium text-blue-900">
+            🔍 Wallet Detection Status
           </h3>
-          
-          <div className="space-y-2 text-sm">
-            <div className="flex items-center space-x-2">
-              {status.hasWindow ? 
-                <CheckCircle className="h-4 w-4 text-green-600" /> : 
+          <div className="mt-3 text-xs sm:text-sm text-blue-800 space-y-3">
+            {/* MetaMask Status */}
+            <div className="flex items-center gap-2">
+              {hasMetaMask ? (
+                <CheckCircle className="h-4 w-4 text-green-600" />
+              ) : (
                 <XCircle className="h-4 w-4 text-red-600" />
-              }
-              <span>Window object: {status.hasWindow ? 'Available' : 'Not found'}</span>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              {status.hasEthereum ? 
-                <CheckCircle className="h-4 w-4 text-green-600" /> : 
-                <XCircle className="h-4 w-4 text-red-600" />
-              }
-              <span>Ethereum provider: {status.hasEthereum ? 'Found' : 'Not found'}</span>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              {status.isMetaMask ? 
-                <CheckCircle className="h-4 w-4 text-green-600" /> : 
-                <XCircle className="h-4 w-4 text-red-600" />
-              }
-              <span>MetaMask: {status.isMetaMask ? 'Detected' : 'Not detected'}</span>
+              )}
+              <span className="font-medium">MetaMask: {hasMetaMask ? '✅ Detected' : '❌ Not Found'}</span>
             </div>
 
-            {status.otherWallets.length > 0 && (
-              <div className="mt-2 pt-2 border-t border-amber-200">
-                <p className="text-amber-800 font-medium mb-1">Other wallets detected:</p>
-                <ul className="list-disc list-inside text-amber-700">
-                  {status.otherWallets.map((wallet, i) => (
-                    <li key={i}>{wallet}</li>
+            {/* All Detected Wallets */}
+            {detectedWallets.length > 0 && (
+              <div className="bg-white/50 rounded-lg p-3">
+                <p className="font-medium mb-2">Detected Wallets ({detectedWallets.length}):</p>
+                <ul className="space-y-2">
+                  {detectedWallets.map((wallet, i) => (
+                    <li key={i} className="flex items-center gap-2">
+                      <span className="text-lg">{wallet.icon}</span>
+                      <span>{wallet.name}</span>
+                      {wallet.type !== 'ethereum' && (
+                        <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded">
+                          {wallet.type}
+                        </span>
+                      )}
+                    </li>
                   ))}
                 </ul>
               </div>
             )}
-          </div>
 
-          {!status.isMetaMask && (
-            <div className="mt-3 pt-3 border-t border-amber-200">
-              <p className="text-sm text-primary-600 mb-2">
-                <strong>To fix this:</strong>
-              </p>
-              <ol className="list-decimal list-inside text-sm text-primary-600 space-y-1">
-                <li>Install MetaMask from <a href="https://metamask.io" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">metamask.io</a></li>
-                <li>Disable other wallet extensions temporarily</li>
-                <li>Refresh this page</li>
-                <li>Click "Connect Wallet"</li>
-              </ol>
-            </div>
-          )}
+            {/* Non-Ethereum Wallet Warning */}
+            {nonEthWallets.length > 0 && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertCircle className="h-4 w-4 text-amber-600" />
+                  <span className="font-medium text-amber-900">⚠️ Non-Ethereum Wallets Detected</span>
+                </div>
+                <p className="text-xs text-amber-800 mb-2">
+                  The following wallets are not compatible with Ethereum dApps and may interfere with MetaMask:
+                </p>
+                <ul className="text-xs text-amber-700 ml-4 space-y-1">
+                  {nonEthWallets.map((w, i) => (
+                    <li key={i}>• {w.name} ({w.type})</li>
+                  ))}
+                </ul>
+                <p className="text-xs text-amber-700 mt-2">
+                  💡 Consider disabling these extensions for this site if you experience connection issues.
+                </p>
+              </div>
+            )}
+
+            {/* Instructions */}
+            {!hasMetaMask && (
+              <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <p className="font-medium mb-2 text-green-900">📝 To use this dApp:</p>
+                <ol className="list-decimal ml-5 space-y-1 text-green-800">
+                  <li>Install MetaMask from <a href="https://metamask.io" target="_blank" rel="noopener noreferrer" className="text-primary-600 underline font-medium">metamask.io</a></li>
+                  <li>Refresh this page</li>
+                  <li>Click "Connect Wallet" button</li>
+                </ol>
+              </div>
+            )}
+
+            {/* Connected Status */}
+            {isConnected && (
+              <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-green-800 font-medium">✅ Wallet Successfully Connected!</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -23,7 +23,6 @@ function App() {
         <Router>
           <div className="flex flex-col min-h-screen bg-primary-50">
             <Navigation />
-            <MetaMaskStatus />
             <main className="flex-grow">
               <Routes>
                 <Route path="/" element={<Landing />} />
