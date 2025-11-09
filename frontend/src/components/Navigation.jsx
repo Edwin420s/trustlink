@@ -5,7 +5,7 @@ import { useWallet } from '../contexts/WalletContext'
 
 const Navigation = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const { account, connectWallet, disconnectWallet, isConnected } = useWallet()
+  const { account, connectWallet, disconnectWallet, isConnected, isConnecting } = useWallet()
   const location = useLocation()
 
   const navItems = [
