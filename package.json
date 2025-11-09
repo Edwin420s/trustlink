@@ -2,15 +2,17 @@
   "name": "trustlink-contracts",
   "version": "1.0.0",
   "description": "TrustLink - Fully onchain digital proof and agreement platform",
-  "main": "index.js",
+  "main": "hardhat.config.js",
   "scripts": {
     "compile": "hardhat compile",
     "deploy": "hardhat run scripts/deploy.js --network lineaTestnet",
     "deploy:mainnet": "hardhat run scripts/deploy.js --network lineaMainnet",
+    "deploy:amoy": "hardhat run scripts/deploy.js --network polygonAmoy",
     "verify": "hardhat verify --network lineaTestnet",
     "test": "hardhat test",
     "test:coverage": "hardhat coverage",
-    "clean": "hardhat clean"
+    "clean": "hardhat clean",
+    "node": "hardhat node"
   },
   "keywords": [
     "blockchain",
@@ -18,14 +20,25 @@
     "ethereum",
     "trust",
     "verification",
-    "documents"
+    "documents",
+    "web3",
+    "defi"
   ],
   "author": "Edwin Mwiti",
   "license": "MIT",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
     "hardhat": "^2.19.0",
-    "hardhat-gas-reporter": "^1.0.9"
+    "hardhat-gas-reporter": "^1.0.9",
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
+    "@nomicfoundation/hardhat-ethers": "^3.0.0",
+    "@nomicfoundation/hardhat-verify": "^2.0.0",
+    "@typechain/ethers-v6": "^0.5.0",
+    "@typechain/hardhat": "^9.0.0",
+    "chai": "^4.3.10",
+    "ethers": "^6.10.0",
+    "hardhat-contract-sizer": "^2.10.0",
+    "typechain": "^8.3.0"
   },
   "dependencies": {
     "dotenv": "^16.3.1"
