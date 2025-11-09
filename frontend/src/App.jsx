@@ -6,6 +6,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import { WalletProvider } from './contexts/WalletContext'
 import { AppProvider } from './contexts/AppContext'
 import Navigation from './components/Navigation'
+import Footer from './components/Footer'
 import MetaMaskStatus from './components/MetaMaskStatus'
 import Landing from './pages/Landing'
 import Dashboard from './pages/Dashboard'
@@ -20,10 +21,10 @@ function App() {
     <WalletProvider>
       <AppProvider>
         <Router>
-          <div className="min-h-screen bg-primary-50">
+          <div className="flex flex-col min-h-screen bg-primary-50">
             <Navigation />
             <MetaMaskStatus />
-            <main>
+            <main className="flex-grow">
               <Routes>
                 <Route path="/" element={<Landing />} />
                 <Route path="/app" element={<Dashboard />} />
@@ -34,6 +35,7 @@ function App() {
                 <Route path="/settings" element={<Settings />} />
               </Routes>
             </main>
+            <Footer />
             <ToastContainer
               position="bottom-right"
               autoClose={5000}

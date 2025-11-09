@@ -28,26 +28,28 @@ const Navigation = () => {
   }
 
   return (
-    <nav className="bg-white shadow-sm border-b border-primary-100">
+    <nav className="bg-white shadow-sm border-b border-primary-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+        {/* Main navigation row */}
+        <div className="flex justify-between items-center h-16">
           {/* Logo and brand */}
-          <div className="flex items-center">
+          <div className="flex items-center flex-shrink-0">
             <Link to="/" className="flex items-center space-x-2">
-              <Shield className="h-8 w-8 text-primary-500" />
-              <span className="text-xl font-semibold text-primary-700">
+              <Shield className="h-6 w-6 sm:h-8 sm:w-8 text-primary-500" />
+              <span className="text-base sm:text-xl font-semibold text-primary-700">
                 TrustLink
               </span>
             </Link>
           </div>
 
-          {/* Desktop navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {(isAppPage ? appNavItems : navItems).map((item) => (
+          {/* Desktop & Mobile Navigation */}
+          <div className="flex items-center space-x-1 sm:space-x-3 md:space-x-6">
+            {/* Show only 3 main nav items on mobile, all on desktop */}
+            {navItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`px-1.5 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
                   location.pathname === item.path
                     ? 'text-primary-600 bg-primary-50'
                     : 'text-primary-500 hover:text-primary-600'
