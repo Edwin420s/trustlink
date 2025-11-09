@@ -49,7 +49,7 @@ contract ProofVerifier {
         results = new bool[](_documentHashes.length);
         
         for (uint256 i = 0; i < _documentHashes.length; i++) {
-            (bool exists,,) = trustLinkCore.verifyProof(_documentHashes[i]);
+            (bool exists,,,) = trustLinkCore.verifyProof(_documentHashes[i]);
             results[i] = exists;
             
             if (exists) {
