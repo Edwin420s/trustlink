@@ -6,6 +6,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import { WalletProvider } from './contexts/WalletContext'
 import { AppProvider } from './contexts/AppContext'
 import Navigation from './components/Navigation'
+import MetaMaskStatus from './components/MetaMaskStatus'
 import Landing from './pages/Landing'
 import Dashboard from './pages/Dashboard'
 import Agreements from './pages/Agreements'
@@ -21,6 +22,7 @@ function App() {
         <Router>
           <div className="min-h-screen bg-primary-50">
             <Navigation />
+            <MetaMaskStatus />
             <main>
               <Routes>
                 <Route path="/" element={<Landing />} />
