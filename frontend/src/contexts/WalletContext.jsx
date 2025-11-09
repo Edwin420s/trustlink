@@ -87,11 +87,32 @@ export const WalletProvider = ({ children }) => {
           throw new Error('Invalid provider: missing request method')
         }
         
+        // Check if MetaMask is locked
+        try {
+          const isUnlocked = await wallet.provider._metamask?.isUnlocked?.()
+          console.log('🔓 MetaMask locked status:', isUnlocked === false ? 'LOCKED' : 'unlocked')
+          if (isUnlocked === false) {
+            throw new Error('MetaMask is locked. Please unlock it and try again.')
+          }
+        } catch (e) {
+          console.log('   Could not check lock status:', e.message)
+        }
+        
         // Ethereum wallets (MetaMask, Coinbase, etc.)
         console.log('📞 Calling eth_requestAccounts...')
-        const accounts = await wallet.provider.request({ 
+        console.log('⏳ Waiting for MetaMask popup... (30 second timeout)')
+        
+        // Add timeout to prevent hanging
+        const accountsPromise = wallet.provider.request({ 
           method: 'eth_requestAccounts' 
         })
+        
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Connection timeout. MetaMask popup did not appear. Please:\n1. Check if MetaMask is unlocked\n2. Look for MetaMask popup (might be hidden)\n3. Try disabling other wallet extensions temporarily')), 30000)
+        )
+        
+        const accounts = await Promise.race([accountsPromise, timeoutPromise])
+        
         console.log('✅ Ethereum accounts received:', accounts)
         if (accounts && accounts.length > 0) {
           address = accounts[0]
