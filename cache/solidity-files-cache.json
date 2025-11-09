@@ -1,0 +1,155 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "D:\\Projects\\trustlink\\contracts\\interfaces\\ITrustLinkCore.sol": {
+      "lastModificationDate": 1762684745958,
+      "contentHash": "10ca7cb8ec6ea618286570c9c3cd7d58",
+      "sourceName": "contracts/interfaces/ITrustLinkCore.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "ITrustLinkCore"
+      ]
+    },
+    "D:\\Projects\\trustlink\\contracts\\TrustLinkRegistry.sol": {
+      "lastModificationDate": 1762684816651,
+      "contentHash": "ce328a4db5c8ad938cbd949e97ac7cbc",
+      "sourceName": "contracts/TrustLinkRegistry.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./interfaces/ITrustLinkCore.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "TrustLinkRegistry"
+      ]
+    },
+    "D:\\Projects\\trustlink\\contracts\\TrustLinkCore.sol": {
+      "lastModificationDate": 1762684768085,
+      "contentHash": "a78936f77ee53dc2d93c794f77bad76f",
+      "sourceName": "contracts/TrustLinkCore.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./interfaces/ITrustLinkCore.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "TrustLinkCore"
+      ]
+    },
+    "D:\\Projects\\trustlink\\contracts\\ProofVerifier.sol": {
+      "lastModificationDate": 1762690934112,
+      "contentHash": "99a8cb373b69ef594ad92e277e70b6a2",
+      "sourceName": "contracts/ProofVerifier.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./interfaces/ITrustLinkCore.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "ProofVerifier"
+      ]
+    }
+  }
+}
