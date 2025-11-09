@@ -1,12 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { ethers } from 'ethers'
-import { 
-  getMetaMaskProvider, 
-  isMetaMaskInstalled, 
-  waitForProvider,
-  getAvailableWallets,
-  hasWalletConflicts 
-} from '../utils/walletDetection'
+import WalletModal from '../components/WalletModal'
 
 const WalletContext = createContext()
 
@@ -23,8 +17,7 @@ export const WalletProvider = ({ children }) => {
   const [provider, setProvider] = useState(null)
   const [isConnecting, setIsConnecting] = useState(false)
   const [error, setError] = useState(null)
-  const [detectedWallets, setDetectedWallets] = useState([])
-  const [metaMaskProvider, setMetaMaskProvider] = useState(null)
+  const [showWalletModal, setShowWalletModal] = useState(false)
 
   const disconnectWallet = useCallback(() => {
     setAccount(null)
@@ -37,9 +30,8 @@ export const WalletProvider = ({ children }) => {
       disconnectWallet()
     } else {
       setAccount(accounts[0])
-      const mmProvider = getMetaMaskProvider()
-      if (mmProvider) {
-        setProvider(new ethers.BrowserProvider(mmProvider))
+      if (window.ethereum) {
+        setProvider(new ethers.BrowserProvider(window.ethereum))
       }
     }
   }, [disconnectWallet])
@@ -48,130 +40,123 @@ export const WalletProvider = ({ children }) => {
     window.location.reload()
   }, [])
 
+  // Don't auto-connect on mount - wait for user action
   useEffect(() => {
-    let mounted = true
-
-    const setupProvider = async () => {
-      try {
-        // Detect all available wallets
-        const wallets = getAvailableWallets()
-        if (mounted) {
-          setDetectedWallets(wallets)
-        }
-
-        // Wait for MetaMask to be injected
-        const mmProvider = await waitForProvider()
-        
-        if (!mmProvider || !mounted) {
-          console.log('MetaMask not found after waiting')
-          return
-        }
-
-        if (mounted) {
-          setMetaMaskProvider(mmProvider)
-        }
-
-        // Check if already connected
-        try {
-          const accounts = await mmProvider.request({ method: 'eth_accounts' })
-          if (accounts.length > 0 && mounted) {
-            setAccount(accounts[0])
-            setProvider(new ethers.BrowserProvider(mmProvider))
-          }
-        } catch (err) {
-          console.log('No existing connection:', err.message)
-        }
-
-        // Set up event listeners
-        if (mmProvider.on) {
-          mmProvider.on('accountsChanged', handleAccountsChanged)
-          mmProvider.on('chainChanged', handleChainChanged)
-        }
-
-      } catch (err) {
-        console.error('Error setting up provider:', err)
-        if (mounted) {
-          setError(err.message)
-        }
-      }
+    // Only set up event listeners, don't auto-connect
+    if (window.ethereum?.on) {
+      window.ethereum.on('accountsChanged', handleAccountsChanged)
+      window.ethereum.on('chainChanged', handleChainChanged)
     }
 
-    setupProvider()
-
     return () => {
-      mounted = false
-      const provider = getMetaMaskProvider()
-      if (provider?.removeListener) {
-        provider.removeListener('accountsChanged', handleAccountsChanged)
-        provider.removeListener('chainChanged', handleChainChanged)
+      if (window.ethereum?.removeListener) {
+        window.ethereum.removeListener('accountsChanged', handleAccountsChanged)
+        window.ethereum.removeListener('chainChanged', handleChainChanged)
       }
     }
   }, [handleAccountsChanged, handleChainChanged])
 
 
-  const connectWallet = async () => {
-    console.log('🔵 Connect Wallet button clicked')
-    
-    // Check if MetaMask is installed
-    if (!isMetaMaskInstalled()) {
-      const message = '🦊 MetaMask is not installed!\n\nPlease install MetaMask from https://metamask.io to use this dApp.'
-      console.error('❌ MetaMask not found')
-      setError(message)
-      alert(message)
-      return
-    }
+  const connectWallet = () => {
+    // Open the wallet selection modal
+    setShowWalletModal(true)
+  }
 
-    console.log('✅ MetaMask detected, starting connection...')
-
+  const handleWalletSelect = async (wallet) => {
+    setShowWalletModal(false)
     setIsConnecting(true)
     setError(null)
     
+    console.log('💼 Connecting to wallet:', wallet.name, '(', wallet.type, ')')
+    console.log('📦 Provider object:', wallet.provider)
+    console.log('📦 Provider properties:', {
+      isMetaMask: wallet.provider?.isMetaMask,
+      isCoinbaseWallet: wallet.provider?.isCoinbaseWallet,
+      hasRequest: typeof wallet.provider?.request === 'function'
+    })
+    
     try {
-      // Get the MetaMask provider specifically
-      const mmProvider = getMetaMaskProvider()
-      
-      if (!mmProvider) {
-        throw new Error('MetaMask provider not found. Please refresh the page.')
+      let address = null
+
+      // Handle different wallet types
+      if (wallet.type === 'ethereum') {
+        console.log('🦊 Connecting to Ethereum wallet...')
+        
+        // Verify provider is valid
+        if (!wallet.provider || typeof wallet.provider.request !== 'function') {
+          throw new Error('Invalid provider: missing request method')
+        }
+        
+        // Ethereum wallets (MetaMask, Coinbase, etc.)
+        console.log('📞 Calling eth_requestAccounts...')
+        const accounts = await wallet.provider.request({ 
+          method: 'eth_requestAccounts' 
+        })
+        console.log('✅ Ethereum accounts received:', accounts)
+        if (accounts && accounts.length > 0) {
+          address = accounts[0]
+          setProvider(new ethers.BrowserProvider(wallet.provider))
+        }
+      } else if (wallet.type === 'cardano') {
+        console.log('₳ Connecting to Cardano wallet...')
+        // Cardano wallets (Eternl, Nami, Yoroi)
+        const api = await wallet.provider.enable()
+        console.log('✅ Cardano API enabled:', api)
+        
+        // Get change address (most commonly used)
+        const changeAddress = await api.getChangeAddress()
+        console.log('📬 Cardano address:', changeAddress)
+        
+        if (changeAddress) {
+          address = changeAddress
+          // Store Cardano API for later use
+          setProvider({ cardanoApi: api, type: 'cardano', walletName: wallet.name })
+        }
+      } else if (wallet.type === 'solana') {
+        console.log('👻 Connecting to Solana wallet...')
+        // Solana wallets (Phantom)
+        const resp = await wallet.provider.connect()
+        console.log('✅ Solana connected:', resp)
+        if (resp?.publicKey) {
+          address = resp.publicKey.toString()
+          setProvider({ solanaProvider: wallet.provider, type: 'solana' })
+        }
+      } else if (wallet.type === 'polkadot') {
+        // Polkadot wallets
+        console.log('🔴 Polkadot wallet not yet supported')
+        alert('Polkadot wallet support coming soon!')
+        setIsConnecting(false)
+        return
       }
 
-      console.log('🔵 Requesting accounts from MetaMask...')
-
-      // Request account access
-      const accounts = await mmProvider.request({ 
-        method: 'eth_requestAccounts' 
-      })
-      
-      console.log('📩 Received accounts:', accounts)
-      
-      if (accounts.length > 0) {
-        setAccount(accounts[0])
-        setProvider(new ethers.BrowserProvider(mmProvider))
-        setMetaMaskProvider(mmProvider)
+      if (address) {
+        setAccount(address)
         console.log('✅ Wallet connected successfully!')
-        console.log('   Address:', accounts[0])
+        console.log('   Address:', address)
+      } else {
+        throw new Error('No address returned from wallet')
       }
     } catch (err) {
-      console.error('❌ Error connecting wallet:', err)
+      console.error('❌ Wallet connection error:', err)
       console.error('   Error code:', err.code)
       console.error('   Error message:', err.message)
       
       let errorMessage = 'Failed to connect wallet'
       
-      if (err.code === 4001) {
-        errorMessage = 'You rejected the connection request. Please try again if you want to connect.'
+      if (err.code === 4001 || err.message?.includes('rejected') || err.message?.includes('User rejected')) {
+        errorMessage = 'You rejected the connection request.'
       } else if (err.code === -32002) {
-        errorMessage = 'Connection request already pending. Please check your MetaMask extension.'
-      } else if (err.message?.includes('not found')) {
-        errorMessage = 'MetaMask not detected. Please make sure it is installed and enabled.'
+        errorMessage = 'Connection request pending. Please check your wallet extension.'
+      } else if (err.message?.includes('enable')) {
+        errorMessage = `Failed to enable ${wallet.name}. Make sure the extension is unlocked and try again.`
       } else {
         errorMessage = err.message || errorMessage
       }
       
       setError(errorMessage)
-      alert(errorMessage)
+      alert('❌ Connection Failed\n\n' + errorMessage)
     } finally {
       setIsConnecting(false)
-      console.log('🔵 Connection attempt finished')
     }
   }
 
@@ -183,14 +168,17 @@ export const WalletProvider = ({ children }) => {
     connectWallet,
     disconnectWallet,
     isConnected: !!account,
-    hasMetaMask: isMetaMaskInstalled(),
-    detectedWallets,
-    metaMaskProvider
+    hasMetaMask: typeof window !== 'undefined' && !!window.ethereum?.isMetaMask
   }
 
   return (
     <WalletContext.Provider value={value}>
       {children}
+      <WalletModal 
+        isOpen={showWalletModal}
+        onClose={() => setShowWalletModal(false)}
+        onSelectWallet={handleWalletSelect}
+      />
     </WalletContext.Provider>
   )
 }

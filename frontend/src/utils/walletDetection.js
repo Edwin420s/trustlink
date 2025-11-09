@@ -100,38 +100,19 @@ export const getAvailableWallets = () => {
  * Get MetaMask provider specifically
  */
 export const getMetaMaskProvider = () => {
-  if (typeof window === 'undefined') {
-    console.log('🔍 getMetaMaskProvider: window is undefined (SSR)')
-    return null
-  }
-
-  // Check if ethereum object exists
-  if (!window.ethereum) {
-    console.log('❌ getMetaMaskProvider: window.ethereum not found')
-    return null
-  }
-
-  console.log('🔍 getMetaMaskProvider: window.ethereum found')
+  if (typeof window === 'undefined') return null
+  if (!window.ethereum) return null
 
   // If there are multiple providers, find MetaMask
   if (window.ethereum.providers) {
-    console.log('🔍 Multiple providers detected:', window.ethereum.providers.length)
-    const mmProvider = window.ethereum.providers.find(provider => provider.isMetaMask)
-    if (mmProvider) {
-      console.log('✅ MetaMask found in providers array')
-      return mmProvider
-    }
-    console.log('❌ MetaMask not found in providers array')
-    return null
+    return window.ethereum.providers.find(provider => provider.isMetaMask) || null
   }
 
   // Check if the single ethereum provider is MetaMask
   if (window.ethereum.isMetaMask) {
-    console.log('✅ Single ethereum provider is MetaMask')
     return window.ethereum
   }
 
-  console.log('❌ Single ethereum provider is not MetaMask')
   return null
 }
 
