@@ -15,6 +15,9 @@ interface ITrustLinkCore {
         bytes32 documentHash;
         uint256 timestamp;
         address submittedBy;
+        bool requiresBilateralAck;
+        bool acknowledgedByPartner;
+        bool isRevoked;
     }
 
     function createAgreement(address _partner) external returns (uint256);
