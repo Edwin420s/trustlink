@@ -186,6 +186,10 @@ trustlink/
 │   │   │   ├── Navigation.jsx
 │   │   │   ├── FileUploader.jsx
 │   │   │   ├── AgreementCard.jsx
+│   │   │   ├── VerificationResult.jsx    # ⭐ NEW: Enhanced verification display
+│   │   │   ├── ProofTimeline.jsx         # ⭐ NEW: Visual timeline
+│   │   │   ├── QRShareButton.jsx         # ⭐ NEW: QR code generation
+│   │   │   ├── LanguageSwitcher.jsx      # ⭐ NEW: EN/SW toggle
 │   │   │   ├── Modal.jsx
 │   │   │   ├── StatusIndicator.jsx
 │   │   │   └── Toast.jsx
@@ -201,13 +205,16 @@ trustlink/
 │   │   │   ├── Agreements.jsx
 │   │   │   ├── RecordProof.jsx
 │   │   │   ├── Verify.jsx
+│   │   │   ├── BatchVerify.jsx           # ⭐ NEW: Batch verification
+│   │   │   ├── PublicRegistry.jsx        # ⭐ NEW: Public proof explorer
 │   │   │   ├── About.jsx
 │   │   │   └── Settings.jsx
 │   │   ├── utils/                 # Utility functions
 │   │   │   ├── constants.js
-│   │   │   ├── contract.js
+│   │   │   ├── contract.js               # Updated with new functions
 │   │   │   ├── formatDate.js
-│   │   │   ├── hashFile.js
+│   │   │   ├── hashFile.js               # Enhanced with salting & validation
+│   │   │   ├── localization.js           # ⭐ NEW: EN/SW translations
 │   │   │   ├── network.js
 │   │   │   └── validation.js
 │   │   ├── styles/                # Global styles
@@ -225,7 +232,12 @@ trustlink/
 │   └── deploy.js                  # Contract deployment script
 │
 ├── test/                           # Smart contract tests
-│   └── TrustLinkCore.test.js      # Core contract test suite
+│   ├── TrustLinkCore.test.js      # Core contract test suite
+│   ├── TrustLinkCore.advanced.test.js  # ⭐ NEW: Advanced features tests
+│   └── TrustLinkRegistry.test.js       # ⭐ NEW: Registry tests
+│
+├── .github/workflows/              # CI/CD
+│   └── test.yml                   # ⭐ NEW: Automated testing pipeline
 │
 ├── .env.example                    # Environment variables template
 ├── .gitignore                      # Git ignore rules

@@ -49,7 +49,6 @@ contract TrustLinkRegistry {
         proofExists(_documentHash)
         onlyProofOwner(_documentHash)
     {
-        bool wasPublic = isPublicProof[_documentHash];
         isPublicProof[_documentHash] = _isPublic;
         
         if (_isPublic && !_userPublicSet[msg.sender][_documentHash]) {

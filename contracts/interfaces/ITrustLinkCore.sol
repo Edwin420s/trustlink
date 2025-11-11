@@ -26,5 +26,5 @@ interface ITrustLinkCore {
     function verifyProof(bytes32 _documentHash) external view returns (bool, uint256, uint256, address);
     function getUserAgreements(address _user) external view returns (uint256[] memory);
     function agreements(uint256) external view returns (uint256, address, address, bool, uint256);
-    function proofs(bytes32) external view returns (uint256, bytes32, uint256, address);
+    function proofs(bytes32) external view returns (uint256, bytes32, uint256, address, bool, bool, bool);
 }

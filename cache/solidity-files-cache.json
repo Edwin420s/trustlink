@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "D:\\Projects\\trustlink\\contracts\\interfaces\\ITrustLinkCore.sol": {
-      "lastModificationDate": 1762684745958,
-      "contentHash": "10ca7cb8ec6ea618286570c9c3cd7d58",
+      "lastModificationDate": 1762894712103,
+      "contentHash": "5d903d9ac3df08b7eba2a5b02095ed47",
       "sourceName": "contracts/interfaces/ITrustLinkCore.sol",
       "solcConfig": {
         "version": "0.8.20",
@@ -38,8 +38,8 @@
       ]
     },
     "D:\\Projects\\trustlink\\contracts\\TrustLinkRegistry.sol": {
-      "lastModificationDate": 1762684816651,
-      "contentHash": "ce328a4db5c8ad938cbd949e97ac7cbc",
+      "lastModificationDate": 1762894745121,
+      "contentHash": "9f6d5865609733283061514c35c07200",
       "sourceName": "contracts/TrustLinkRegistry.sol",
       "solcConfig": {
         "version": "0.8.20",
@@ -76,8 +76,8 @@
       ]
     },
     "D:\\Projects\\trustlink\\contracts\\TrustLinkCore.sol": {
-      "lastModificationDate": 1762684768085,
-      "contentHash": "a78936f77ee53dc2d93c794f77bad76f",
+      "lastModificationDate": 1762893606117,
+      "contentHash": "2c0e83f074f912383e6f3d68847aa9e9",
       "sourceName": "contracts/TrustLinkCore.sol",
       "solcConfig": {
         "version": "0.8.20",
@@ -114,8 +114,8 @@
       ]
     },
     "D:\\Projects\\trustlink\\contracts\\ProofVerifier.sol": {
-      "lastModificationDate": 1762690934112,
-      "contentHash": "99a8cb373b69ef594ad92e277e70b6a2",
+      "lastModificationDate": 1762893485089,
+      "contentHash": "941fa0bddc1b115b7428fa5f171411a6",
       "sourceName": "contracts/ProofVerifier.sol",
       "solcConfig": {
         "version": "0.8.20",
