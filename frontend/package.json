@@ -13,7 +13,8 @@
     "react-router-dom": "^6.22.3",
     "ethers": "^6.10.0",
     "lucide-react": "^0.320.0",
-    "react-toastify": "^10.0.5"
+    "react-toastify": "^10.0.5",
+    "qr-code-styling": "^1.6.0-rc.1"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.1",
