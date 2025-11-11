@@ -19,7 +19,10 @@ contract TrustLinkCore is ITrustLinkCore {
     event AgreementCreated(uint256 indexed id, address indexed initiator, address indexed partner);
     event AgreementAccepted(uint256 indexed id, address partner);
     event AgreementCancelled(uint256 indexed id, address cancelledBy);
-    event ProofRecorded(uint256 indexed agreementId, bytes32 documentHash, address submittedBy);
+    event ProofRecorded(uint256 indexed agreementId, bytes32 indexed documentHash, address indexed submittedBy);
+    event ProofAcknowledged(bytes32 indexed documentHash, address acknowledgedBy);
+    event ProofRevocationProposed(bytes32 indexed documentHash, address proposedBy);
+    event ProofRevoked(bytes32 indexed documentHash, address revokedBy);
 
     error InvalidAddress();
     error AgreementNotExists();
@@ -27,6 +30,10 @@ contract TrustLinkCore is ITrustLinkCore {
     error NotAuthorized();
     error ProofAlreadyExists();
     error InvalidAgreement();
+    error ProofNotExists();
+    error ProofAlreadyAcknowledged();
+    error ProofAlreadyRevoked();
+    error CannotAcknowledgeOwnProof();
 
     modifier validAddress(address _address) {
         if (_address == address(0)) revert InvalidAddress();
