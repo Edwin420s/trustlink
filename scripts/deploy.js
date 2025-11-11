@@ -48,6 +48,40 @@ async function main() {
   console.log(`VITE_TRUSTLINK_REGISTRY=${registryAddress}`);
   console.log(`VITE_TRUSTLINK_VERIFIER=${verifierAddress}`);
 
+  // Auto-inject addresses into frontend .env
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const envPath = path.join(__dirname, '../frontend/.env');
+    
+    let envContent = '';
+    if (fs.existsSync(envPath)) {
+      envContent = fs.readFileSync(envPath, 'utf8');
+    }
+
+    // Update or add contract addresses
+    const updates = {
+      'VITE_TRUSTLINK_CORE_ADDRESS': coreAddress,
+      'VITE_TRUSTLINK_REGISTRY_ADDRESS': registryAddress,
+      'VITE_PROOF_VERIFIER_ADDRESS': verifierAddress
+    };
+
+    Object.entries(updates).forEach(([key, value]) => {
+      const regex = new RegExp(`^${key}=.*$`, 'm');
+      if (regex.test(envContent)) {
+        envContent = envContent.replace(regex, `${key}=${value}`);
+      } else {
+        envContent += `\n${key}=${value}`;
+      }
+    });
+
+    fs.writeFileSync(envPath, envContent.trim() + '\n');
+    console.log("\n✅ Contract addresses auto-injected into frontend/.env");
+  } catch (error) {
+    console.warn("\n⚠️  Could not auto-inject to .env:", error.message);
+    console.log("Please manually update frontend/.env with the addresses above");
+  }
+
   return {
     trustLinkCore: coreAddress,
     trustLinkRegistry: registryAddress,
