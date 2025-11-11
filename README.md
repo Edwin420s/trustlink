@@ -276,6 +276,8 @@ trustlink/
 
 ## 🚀 Installation & Setup
 
+> **⚡ Quick Start**: See [QUICKSTART.md](./QUICKSTART.md) for 5-minute setup guide
+
 ### Prerequisites
 
 - **Node.js** 16.x or higher
