@@ -86,6 +86,33 @@ User Device → Hash Document Locally → Record Hash On-Chain → Permanent Pro
 
 ---
 
+## 🆕 What's New (v2.0)
+
+### Enhanced Security
+- ✅ **Bilateral Acknowledgement** - Optional two-party proof confirmation
+- ✅ **Proof Revocation** - Ability to mark proofs as revoked
+- ✅ **Salted Hashing** - Privacy-enhanced hashing to prevent brute-force attacks
+- ✅ **Agreement Cancellation** - Proper lifecycle management
+
+### Improved UX
+- ✅ **Enhanced Verification States** - 5 clear states (verified, not found, revoked, pending, inactive)
+- ✅ **Proof Timeline** - Visual timeline showing agreement → proof → acknowledgement
+- ✅ **QR Code Sharing** - Generate scannable QR codes for easy verification
+- ✅ **Swahili Localization** - Full English + Swahili translation support
+
+### New Features
+- ✅ **Batch Verification** - Verify up to 50 documents at once
+- ✅ **Public Registry** - Browse publicly visible proofs
+- ✅ **View-Only Functions** - Gas-free verification reads
+- ✅ **Auto-Deployment** - Contract addresses auto-inject to frontend
+
+### Developer Experience
+- ✅ **Comprehensive Tests** - 40+ test cases covering all features
+- ✅ **CI/CD Pipeline** - Automated testing with GitHub Actions
+- ✅ **Enhanced Error Handling** - Clear custom errors
+
+---
+
 ## ✨ Key Features
 
 ### Core Features
