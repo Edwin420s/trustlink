@@ -18,7 +18,23 @@ contract ProofVerifier {
     }
 
     /**
-     * @notice Simple proof verification with event emission
+     * @notice View-only proof verification (no gas cost)
+     * @param _documentHash The document hash to verify
+     * @return exists Whether the proof exists
+     * @return timestamp When the proof was recorded
+     * @return submittedBy Who submitted the proof
+     */
+    function verifyReadOnly(bytes32 _documentHash) 
+        external 
+        view
+        returns (bool exists, uint256 timestamp, address submittedBy) 
+    {
+        (bool proofExists, uint256 time,, address owner) = trustLinkCore.verifyProof(_documentHash);
+        return (proofExists, time, owner);
+    }
+
+    /**
+     * @notice Simple proof verification with event emission (requires gas)
      * @param _documentHash The document hash to verify
      * @return exists Whether the proof exists
      * @return timestamp When the proof was recorded
@@ -38,7 +54,27 @@ contract ProofVerifier {
     }
 
     /**
-     * @notice Batch verify multiple document hashes
+     * @notice Batch verify multiple document hashes (view-only, no gas cost)
+     * @param _documentHashes Array of document hashes to verify
+     * @return results Array of verification results
+     */
+    function batchVerifyReadOnly(bytes32[] calldata _documentHashes) 
+        external 
+        view
+        returns (bool[] memory results) 
+    {
+        results = new bool[](_documentHashes.length);
+        
+        for (uint256 i = 0; i < _documentHashes.length; i++) {
+            (bool exists,,,) = trustLinkCore.verifyProof(_documentHashes[i]);
+            results[i] = exists;
+        }
+        
+        return results;
+    }
+
+    /**
+     * @notice Batch verify multiple document hashes (with event emission, requires gas)
      * @param _documentHashes Array of document hashes to verify
      * @return results Array of verification results
      */

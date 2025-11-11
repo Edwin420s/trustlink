@@ -14,9 +14,11 @@ contract TrustLinkRegistry {
     mapping(bytes32 => bool) public isPublicProof;
     mapping(address => uint256) public userProofCount;
     mapping(address => bytes32[]) public userPublicProofs;
+    mapping(address => mapping(bytes32 => bool)) private _userPublicSet;
 
     event ProofVisibilitySet(bytes32 indexed documentHash, bool isPublic, address setBy);
     event PublicProofAdded(bytes32 indexed documentHash, address owner);
+    event PublicProofRemoved(bytes32 indexed documentHash, address owner);
 
     error ProofNotExists();
     error NotProofOwner();
@@ -47,12 +49,22 @@ contract TrustLinkRegistry {
         proofExists(_documentHash)
         onlyProofOwner(_documentHash)
     {
+        bool wasPublic = isPublicProof[_documentHash];
         isPublicProof[_documentHash] = _isPublic;
         
-        if (_isPublic) {
+        if (_isPublic && !_userPublicSet[msg.sender][_documentHash]) {
+            // Adding to public - only if not already in set
+            _userPublicSet[msg.sender][_documentHash] = true;
             userProofCount[msg.sender]++;
             userPublicProofs[msg.sender].push(_documentHash);
             emit PublicProofAdded(_documentHash, msg.sender);
+        } else if (!_isPublic && _userPublicSet[msg.sender][_documentHash]) {
+            // Removing from public
+            _userPublicSet[msg.sender][_documentHash] = false;
+            if (userProofCount[msg.sender] > 0) {
+                userProofCount[msg.sender]--;
+            }
+            emit PublicProofRemoved(_documentHash, msg.sender);
         }
 
         emit ProofVisibilitySet(_documentHash, _isPublic, msg.sender);
