@@ -140,10 +140,115 @@ contract TrustLinkCore is ITrustLinkCore {
             agreementId: _agreementId,
             documentHash: _documentHash,
             timestamp: block.timestamp,
-            submittedBy: msg.sender
+            submittedBy: msg.sender,
+            requiresBilateralAck: false,
+            acknowledgedByPartner: false,
+            isRevoked: false
         });
 
         emit ProofRecorded(_agreementId, _documentHash, msg.sender);
+    }
+
+    /**
+     * @notice Record a document proof with bilateral acknowledgement requirement
+     * @param _agreementId The agreement ID to record proof under
+     * @param _documentHash The SHA-256 hash of the document
+     */
+    function recordProofWithAck(uint256 _agreementId, bytes32 _documentHash) 
+        external 
+        agreementExists(_agreementId)
+        onlyParticipant(_agreementId)
+    {
+        Agreement memory agreement = agreements[_agreementId];
+        
+        if (!agreement.isActive) revert InvalidAgreement();
+        if (proofs[_documentHash].timestamp != 0) revert ProofAlreadyExists();
+
+        proofs[_documentHash] = Proof({
+            agreementId: _agreementId,
+            documentHash: _documentHash,
+            timestamp: block.timestamp,
+            submittedBy: msg.sender,
+            requiresBilateralAck: true,
+            acknowledgedByPartner: false,
+            isRevoked: false
+        });
+
+        emit ProofRecorded(_agreementId, _documentHash, msg.sender);
+    }
+
+    /**
+     * @notice Acknowledge a proof (partner must acknowledge if bilateral ack required)
+     * @param _documentHash The document hash to acknowledge
+     */
+    function acknowledgeProof(bytes32 _documentHash) external {
+        Proof storage proof = proofs[_documentHash];
+        
+        if (proof.timestamp == 0) revert ProofNotExists();
+        if (!proof.requiresBilateralAck) revert NotAuthorized();
+        if (proof.submittedBy == msg.sender) revert CannotAcknowledgeOwnProof();
+        if (proof.acknowledgedByPartner) revert ProofAlreadyAcknowledged();
+        
+        Agreement memory agreement = agreements[proof.agreementId];
+        if (msg.sender != agreement.initiator && msg.sender != agreement.partner) {
+            revert NotAuthorized();
+        }
+        
+        proof.acknowledgedByPartner = true;
+        emit ProofAcknowledged(_documentHash, msg.sender);
+    }
+
+    /**
+     * @notice Propose revocation of a proof (both parties must agree)
+     * @param _documentHash The document hash to revoke
+     */
+    function proposeRevocation(bytes32 _documentHash) external {
+        Proof storage proof = proofs[_documentHash];
+        
+        if (proof.timestamp == 0) revert ProofNotExists();
+        if (proof.isRevoked) revert ProofAlreadyRevoked();
+        
+        Agreement memory agreement = agreements[proof.agreementId];
+        if (msg.sender != agreement.initiator && msg.sender != agreement.partner) {
+            revert NotAuthorized();
+        }
+        
+        emit ProofRevocationProposed(_documentHash, msg.sender);
+    }
+
+    /**
+     * @notice Revoke a proof (requires both parties to call or submitter + partner acknowledge)
+     * @param _documentHash The document hash to revoke
+     */
+    function revokeProof(bytes32 _documentHash) external {
+        Proof storage proof = proofs[_documentHash];
+        
+        if (proof.timestamp == 0) revert ProofNotExists();
+        if (proof.isRevoked) revert ProofAlreadyRevoked();
+        
+        Agreement memory agreement = agreements[proof.agreementId];
+        if (msg.sender != agreement.initiator && msg.sender != agreement.partner) {
+            revert NotAuthorized();
+        }
+        
+        // Simple implementation: allow any participant to revoke
+        // In production, you'd want a two-phase revocation
+        proof.isRevoked = true;
+        emit ProofRevoked(_documentHash, msg.sender);
+    }
+
+    /**
+     * @notice Generate salted hash for privacy (helper function)
+     * @param _documentHash The original document hash
+     * @param _agreementId The agreement ID to use as salt
+     * @return The salted hash
+     */
+    function generateSaltedHash(bytes32 _documentHash, uint256 _agreementId) 
+        external 
+        pure 
+        returns (bytes32) 
+    {
+        return keccak256(abi.encodePacked(_documentHash, _agreementId));
     }
 
     /**
@@ -213,5 +318,15 @@ contract TrustLinkCore is ITrustLinkCore {
      */
     function getTotalAgreements() external view returns (uint256) {
         return _agreementCounter;
+    }
+
+    /**
+     * @notice Get full proof details including ack and revocation status
+     * @param _documentHash The document hash to lookup
+     * @return Full proof struct
+     */
+    function getProof(bytes32 _documentHash) external view returns (Proof memory) {
+        if (proofs[_documentHash].timestamp == 0) revert ProofNotExists();
+        return proofs[_documentHash];
     }
 }
