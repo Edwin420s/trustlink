@@ -3,9 +3,14 @@ import { Upload, FileCheck, Calendar } from 'lucide-react'
 import { useWallet } from '../contexts/WalletContext'
 import FileUploader from '../components/FileUploader'
 import { hashFile } from '../utils/hashFile'
+import { getTrustLinkContract } from '../utils/contract'
+import { CONTRACT_ADDRESSES } from '../utils/constants'
+import { useContracts } from '../hooks/useContracts'
 
 const RecordProof = () => {
-  const { account, isConnected } = useWallet()
+  const { account, isConnected, provider } = useWallet()
+  const { recordDocumentProof } = useContracts()
+
   const [selectedFile, setSelectedFile] = useState(null)
   const [selectedAgreement, setSelectedAgreement] = useState('')
   const [agreements, setAgreements] = useState([])
@@ -18,12 +23,26 @@ const RecordProof = () => {
     }
   }, [isConnected])
 
-  const loadAgreements = () => {
-    // Mock data - in real app, fetch from contract
-    setAgreements([
-      { id: 1, partner: '0x7421d123456789abcdef123456789abcdef12345', isActive: true },
-      { id: 2, partner: '0x8934e123456789abcdef123456789abcdef12345', isActive: true }
-    ])
+  const loadAgreements = async () => {
+    try {
+      if (!CONTRACT_ADDRESSES.trustLinkCore) return
+      let browserProvider = provider
+      if (!browserProvider && typeof window !== 'undefined' && window.ethereum) {
+        const { ethers } = await import('ethers')
+        browserProvider = new ethers.BrowserProvider(window.ethereum)
+      }
+      if (!browserProvider) return
+      const contract = getTrustLinkContract(browserProvider, CONTRACT_ADDRESSES.trustLinkCore)
+      const ids = await contract.getUserAgreements(account)
+      const items = []
+      for (const id of ids) {
+        const ag = await contract.getAgreement(id)
+        items.push({ id: Number(ag.id ?? id), partner: ag.initiator.toLowerCase() === account.toLowerCase() ? ag.partner : ag.initiator, isActive: ag.isActive })
+      }
+      setAgreements(items)
+    } catch (e) {
+      console.error('Failed to load agreements:', e)
+    }
   }
 
   const handleFileSelect = (file) => {
@@ -41,19 +60,8 @@ const RecordProof = () => {
     try {
       // Hash the file locally
       const fileHash = await hashFile(selectedFile)
-      
-      // In real app: await recordProof(contract, selectedAgreement, fileHash, signer)
-      console.log('Recording proof:', { agreementId: selectedAgreement, fileHash })
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 3000))
-      
-      setRecordedProof({
-        agreementId: selectedAgreement,
-        documentHash: fileHash,
-        timestamp: Math.floor(Date.now() / 1000),
-        fileName: selectedFile.name
-      })
+      await recordDocumentProof(Number(selectedAgreement), fileHash)
+      setRecordedProof({ agreementId: Number(selectedAgreement), documentHash: fileHash, timestamp: Math.floor(Date.now() / 1000), fileName: selectedFile.name })
       
       // Reset form
       setSelectedFile(null)

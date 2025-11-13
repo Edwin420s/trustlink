@@ -126,22 +126,24 @@ export const AppProvider = ({ children }) => {
     dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true })
     
     try {
-      // In a real app, fetch from contract
-      // const agreementIds = await contracts.core.getUserAgreements(account)
-      // const agreements = await Promise.all(agreementIds.map(id => contracts.core.agreements(id)))
-      
-      // Mock data for demo
-      const mockAgreements = [
-        {
-          id: 1,
-          initiator: account,
-          partner: '0x7421d123456789abcdef123456789abcdef12345',
-          isActive: true,
-          createdAt: Math.floor(Date.now() / 1000) - 86400
-        }
-      ]
-      
-      dispatch({ type: ACTION_TYPES.SET_AGREEMENTS, payload: mockAgreements })
+      if (!contracts.core) {
+        dispatch({ type: ACTION_TYPES.SET_AGREEMENTS, payload: [] })
+        return
+      }
+      const ids = await contracts.core.getUserAgreements(account)
+      const items = []
+      for (const id of ids) {
+        const ag = await contracts.core.getAgreement(id)
+        items.push({
+          id: Number(ag.id ?? id),
+          initiator: ag.initiator,
+          partner: ag.partner,
+          isActive: ag.isActive,
+          createdAt: Number(ag.createdAt)
+        })
+      }
+      items.sort((a,b)=>b.createdAt - a.createdAt)
+      dispatch({ type: ACTION_TYPES.SET_AGREEMENTS, payload: items })
     } catch (error) {
       dispatch({ type: ACTION_TYPES.SET_ERROR, payload: error.message })
     } finally {
