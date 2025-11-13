@@ -8,8 +8,6 @@ Built for **ETH Safari Hackathon 2025** | **Aqua Protocol Bounty Track**
 
 • Live Demo: [TrustLink – Confirm What’s Real](https://trustlink.vercel.app)
 
-• Repository: https://github.com/Edwin420s/trustlink
-
 ---
 
 ## 📋 Table of Contents
@@ -562,6 +560,20 @@ cd frontend
 npm run build
 vercel --prod
 ```
+
+---
+
+## 📦 Deployed Contracts (Linea Sepolia)
+
+- **Network**: Linea Sepolia (chainId 59141)
+- **Explorer**: https://sepolia.lineascan.build
+
+- **TrustLinkCore**: `0x3b56d2910b9f29F16AB5b1878e588a76b3dC4E21`  
+  Explorer: https://sepolia.lineascan.build/address/0x3b56d2910b9f29F16AB5b1878e588a76b3dC4E21
+- **TrustLinkRegistry**: `0x3d59d1eAcE73de3b30F523F91C9EE1B08DA999C5`  
+  Explorer: https://sepolia.lineascan.build/address/0x3d59d1eAcE73de3b30F523F91C9EE1B08DA999C5
+- **ProofVerifier**: `0xc60548f8cdC5B87f6c9b39eda53067e4f173e9D6`  
+  Explorer: https://sepolia.lineascan.build/address/0xc60548f8cdC5B87f6c9b39eda53067e4f173e9D6
 
 ---
 

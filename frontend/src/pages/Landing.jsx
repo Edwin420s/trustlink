@@ -49,7 +49,7 @@ const Landing = () => {
               A Better Way to Confirm What’s Real
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-primary-600 mb-6 sm:mb-8 max-w-3xl mx-auto px-2 leading-relaxed">
-              Record and verify the authenticity of important digital documents — privately, permanently, and transparently.
+              Record and verify the authenticity of important digital documents privately, permanently, and transparently.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
               {isConnected ? (

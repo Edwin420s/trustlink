@@ -14,9 +14,9 @@ module.exports = {
   },
   networks: {
     lineaTestnet: {
-      url: process.env.LINEA_RPC_URL || "https://rpc.linea.build",
+      url: process.env.LINEA_RPC_URL || "https://rpc.sepolia.linea.build",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-      chainId: 59140,
+      chainId: 59141,
     },
     lineaMainnet: {
       url: process.env.LINEA_MAINNET_RPC_URL || "https://linea-mainnet.infura.io/v3/",
@@ -38,9 +38,9 @@ module.exports = {
     customChains: [
       {
         network: "lineaTestnet",
-        chainId: 59140,
+        chainId: 59141,
         urls: {
-          apiURL: "https://api-testnet.lineascan.build/api",
+          apiURL: "https://api-sepolia.lineascan.build/api",
           browserURL: "https://sepolia.lineascan.build"
         }
       },
