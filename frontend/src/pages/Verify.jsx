@@ -3,9 +3,11 @@ import { Search, CheckCircle, XCircle, Clock } from 'lucide-react'
 import { useWallet } from '../contexts/WalletContext'
 import FileUploader from '../components/FileUploader'
 import { hashFile } from '../utils/hashFile'
+import { getTrustLinkContract } from '../utils/contract'
+import { CONTRACT_ADDRESSES } from '../utils/constants'
 
 const Verify = () => {
-  const { isConnected } = useWallet()
+  const { isConnected, provider } = useWallet()
   const [selectedFile, setSelectedFile] = useState(null)
   const [verificationResult, setVerificationResult] = useState(null)
   const [isVerifying, setIsVerifying] = useState(false)
@@ -29,30 +31,35 @@ const Verify = () => {
       return
     }
 
+    // Basic validation for bytes32 length
+    if (!/^0x[0-9a-fA-F]{64}$/.test(fileHash)) {
+      alert('Invalid hash format. Expecting 0x-prefixed 32-byte hash.')
+      return
+    }
+
+    if (!CONTRACT_ADDRESSES.trustLinkCore) {
+      alert('Contract address not configured. Please set VITE_TRUSTLINK_CORE_ADDRESS in frontend/.env')
+      return
+    }
+
     setIsVerifying(true)
     try {
-      // In real app: const result = await verifyProof(contract, fileHash)
-      // Mock verification
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // Simulate different results
-      const mockResults = [
-        {
-          exists: true,
-          timestamp: Math.floor(Date.now() / 1000) - 86400,
-          agreementId: 1,
-          submittedBy: '0x7421d123456789abcdef123456789abcdef12345'
-        },
-        {
-          exists: false,
-          timestamp: 0,
-          agreementId: 0,
-          submittedBy: '0x0000000000000000000000000000000000000000'
-        }
-      ]
-      
-      const result = Math.random() > 0.3 ? mockResults[0] : mockResults[1]
-      setVerificationResult(result)
+      // Prepare read-only provider
+      let browserProvider = provider
+      if (!browserProvider && typeof window !== 'undefined' && window.ethereum) {
+        const { ethers } = await import('ethers')
+        browserProvider = new ethers.BrowserProvider(window.ethereum)
+      }
+
+      if (!browserProvider) {
+        alert('No Ethereum provider found. Please install MetaMask or connect a wallet.')
+        return
+      }
+
+      const contract = getTrustLinkContract(browserProvider, CONTRACT_ADDRESSES.trustLinkCore)
+      const [exists, timestamp, agreementId, submittedBy] = await contract.verifyProof(fileHash)
+
+      setVerificationResult({ exists, timestamp: Number(timestamp), agreementId: Number(agreementId), submittedBy })
     } catch (error) {
       console.error('Error verifying proof:', error)
       alert('Failed to verify proof. Please try again.')

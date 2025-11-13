@@ -1,5 +1,6 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("dotenv").config();
+require("solidity-coverage");
 
 module.exports = {
   solidity: {
@@ -40,7 +41,7 @@ module.exports = {
         chainId: 59140,
         urls: {
           apiURL: "https://api-testnet.lineascan.build/api",
-          browserURL: "https://goerli.lineascan.build"
+          browserURL: "https://sepolia.lineascan.build"
         }
       },
       {

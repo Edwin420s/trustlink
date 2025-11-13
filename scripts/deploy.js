@@ -44,9 +44,9 @@ async function main() {
 
   // Prepare for frontend configuration
   console.log("\n📝 Frontend Configuration:");
-  console.log(`VITE_TRUSTLINK_CORE=${coreAddress}`);
-  console.log(`VITE_TRUSTLINK_REGISTRY=${registryAddress}`);
-  console.log(`VITE_TRUSTLINK_VERIFIER=${verifierAddress}`);
+  console.log(`VITE_TRUSTLINK_CORE_ADDRESS=${coreAddress}`);
+  console.log(`VITE_TRUSTLINK_REGISTRY_ADDRESS=${registryAddress}`);
+  console.log(`VITE_PROOF_VERIFIER_ADDRESS=${verifierAddress}`);
 
   // Auto-inject addresses into frontend .env
   try {
