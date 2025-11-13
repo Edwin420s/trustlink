@@ -9,33 +9,33 @@ const Landing = () => {
   const features = [
     {
       icon: CheckCircle,
-      title: 'Document Authenticity',
-      description: 'Prove when a document was created and confirm it has not been altered.'
+      title: 'Verifiable Proofs',
+      description: 'Create permanent, tamper-evident proofs for important digital documents.'
     },
     {
       icon: Users,
-      title: 'Mutual Agreements',
-      description: 'Both parties agree to use the system, creating a foundation of trust.'
+      title: 'Agreements That Matter',
+      description: 'Mutual consent between parties recorded on-chain to anchor trust.'
     },
     {
       icon: Lock,
-      title: 'Complete Privacy',
-      description: 'Your documents never leave your device. Only proof hashes are stored.'
+      title: 'Private by Design',
+      description: 'No files uploaded. Only cryptographic fingerprints (hashes) are stored.'
     }
   ]
 
   const useCases = [
     {
-      category: 'Business & Legal',
-      examples: ['Contracts', 'NDAs', 'Agreements']
+      category: 'Businesses & Teams',
+      examples: ['Contracts', 'NDAs', 'Internal approvals']
     },
     {
-      category: 'Education',
-      examples: ['Certificates', 'Transcripts', 'Diplomas']
+      category: 'Institutions',
+      examples: ['Certificates', 'Transcripts', 'Reports']
     },
     {
-      category: 'Media & Journalism',
-      examples: ['Press Releases', 'Official Statements', 'Reports']
+      category: 'Media & Public Sector',
+      examples: ['Press Releases', 'Policy Memos', 'Public Notices']
     }
   ]
 
@@ -46,24 +46,22 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary-700 mb-4 sm:mb-6 leading-tight">
-              A Better Way to Confirm<br className="hidden sm:block" /> What's Real
+              A Better Way to Confirm What’s Real
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-primary-600 mb-6 sm:mb-8 max-w-3xl mx-auto px-2 leading-relaxed">
-              TrustLink helps individuals and organizations record and verify digital document authenticity privately and permanently.
+              Record and verify the authenticity of important digital documents — privately, permanently, and transparently.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
               {isConnected ? (
                 <Link to="/app" className="btn-primary text-base sm:text-lg px-6 sm:px-8 w-full sm:w-auto">
-                  Go to Dashboard
+                  Launch App
                 </Link>
               ) : (
                 <button onClick={connectWallet} className="btn-primary text-base sm:text-lg px-6 sm:px-8 w-full sm:w-auto">
                   Get Started
                 </button>
               )}
-              <Link to="/about" className="btn-secondary text-base sm:text-lg px-6 sm:px-8 w-full sm:w-auto">
-                Learn More
-              </Link>
+              <Link to="/verify" className="btn-secondary text-base sm:text-lg px-6 sm:px-8 w-full sm:w-auto">Verify</Link>
             </div>
           </div>
         </div>
@@ -74,10 +72,10 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 sm:mb-12">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary-700 mb-3 sm:mb-4">
-              Why Trust Breaks Down Online
+              Why Digital Trust Breaks Down
             </h2>
             <p className="text-base sm:text-lg text-primary-600 max-w-2xl mx-auto px-2">
-              Digital documents can be easily changed, email timestamps aren't reliable proof, and there's no neutral space for trust.
+              Documents can be altered without trace. Email timestamps can be faked. There’s rarely a neutral, privacy-first way to prove authenticity.
             </p>
           </div>
         </div>

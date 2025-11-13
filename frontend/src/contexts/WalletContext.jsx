@@ -15,6 +15,7 @@ export const useWallet = () => {
 export const WalletProvider = ({ children }) => {
   const [account, setAccount] = useState(null)
   const [provider, setProvider] = useState(null)
+  const [rawProvider, setRawProvider] = useState(null)
   const [isConnecting, setIsConnecting] = useState(false)
   const [error, setError] = useState(null)
   const [showWalletModal, setShowWalletModal] = useState(false)
@@ -30,9 +31,6 @@ export const WalletProvider = ({ children }) => {
       disconnectWallet()
     } else {
       setAccount(accounts[0])
-      if (window.ethereum) {
-        setProvider(new ethers.BrowserProvider(window.ethereum))
-      }
     }
   }, [disconnectWallet])
 
@@ -40,21 +38,16 @@ export const WalletProvider = ({ children }) => {
     window.location.reload()
   }, [])
 
-  // Don't auto-connect on mount - wait for user action
+  // Attach listeners to the selected raw EVM provider only
   useEffect(() => {
-    // Only set up event listeners, don't auto-connect
-    if (window.ethereum?.on) {
-      window.ethereum.on('accountsChanged', handleAccountsChanged)
-      window.ethereum.on('chainChanged', handleChainChanged)
-    }
-
+    if (!rawProvider?.on) return
+    rawProvider.on('accountsChanged', handleAccountsChanged)
+    rawProvider.on('chainChanged', handleChainChanged)
     return () => {
-      if (window.ethereum?.removeListener) {
-        window.ethereum.removeListener('accountsChanged', handleAccountsChanged)
-        window.ethereum.removeListener('chainChanged', handleChainChanged)
-      }
+      try { rawProvider.removeListener?.('accountsChanged', handleAccountsChanged) } catch {}
+      try { rawProvider.removeListener?.('chainChanged', handleChainChanged) } catch {}
     }
-  }, [handleAccountsChanged, handleChainChanged])
+  }, [rawProvider, handleAccountsChanged, handleChainChanged])
 
 
   const connectWallet = () => {
@@ -87,23 +80,26 @@ export const WalletProvider = ({ children }) => {
           throw new Error('Invalid provider: missing request method')
         }
         
-        // Check if MetaMask is locked
-        try {
-          const isUnlocked = await wallet.provider._metamask?.isUnlocked?.()
-          console.log('🔓 MetaMask locked status:', isUnlocked === false ? 'LOCKED' : 'unlocked')
-          if (isUnlocked === false) {
-            setError('MetaMask is locked. Please unlock it and try again.')
-            alert('MetaMask is locked. Please unlock it and try again.')
-            setIsConnecting(false)
-            return
+        // Only run MetaMask-specific lock check when the selected wallet is MetaMask
+        const isSelectedMetaMask = (wallet.id === 'metamask') || /metamask/i.test(wallet.name || '')
+        if (isSelectedMetaMask && wallet.provider?._metamask?.isUnlocked) {
+          try {
+            const isUnlocked = await wallet.provider._metamask?.isUnlocked?.()
+            console.log('🔓 MetaMask locked status:', isUnlocked === false ? 'LOCKED' : 'unlocked')
+            if (isUnlocked === false) {
+              setError('MetaMask is locked. Please unlock it and try again.')
+              alert('MetaMask is locked. Please unlock it and try again.')
+              setIsConnecting(false)
+              return
+            }
+          } catch (e) {
+            console.log('   Could not check lock status:', e.message)
           }
-        } catch (e) {
-          console.log('   Could not check lock status:', e.message)
         }
         
-        // Ethereum wallets (MetaMask, Coinbase, etc.)
-        console.log('📞 Calling eth_requestAccounts...')
-        console.log('⏳ Waiting for MetaMask popup... (30 second timeout)')
+        // Ethereum wallets (EVM providers)
+        console.log('📞 Calling eth_requestAccounts on selected wallet...')
+        console.log('⏳ Waiting for wallet popup... (30 second timeout)')
         
         // Add timeout to prevent hanging
         const accountsPromise = wallet.provider.request({ 
@@ -111,7 +107,7 @@ export const WalletProvider = ({ children }) => {
         })
         
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Connection timeout. MetaMask popup did not appear. Please:\n1. Check if MetaMask is unlocked\n2. Look for MetaMask popup (might be hidden)\n3. Try disabling other wallet extensions temporarily')), 30000)
+          setTimeout(() => reject(new Error('Connection timeout. Wallet popup did not appear. Please:\n1. Ensure the selected wallet is unlocked\n2. Look for the wallet popup (it may be hidden)\n3. Temporarily disable other wallet extensions if they interfere')), 30000)
         )
         
         let accounts
@@ -130,7 +126,9 @@ export const WalletProvider = ({ children }) => {
         console.log('✅ Ethereum accounts received:', accounts)
         if (accounts && accounts.length > 0) {
           address = accounts[0]
-          setProvider(new ethers.BrowserProvider(wallet.provider))
+          const browserProvider = new ethers.BrowserProvider(wallet.provider)
+          setProvider(browserProvider)
+          setRawProvider(wallet.provider)
         }
       } else if (wallet.type === 'cardano') {
         console.log('₳ Connecting to Cardano wallet...')
