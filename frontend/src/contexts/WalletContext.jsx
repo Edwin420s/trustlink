@@ -92,7 +92,10 @@ export const WalletProvider = ({ children }) => {
           const isUnlocked = await wallet.provider._metamask?.isUnlocked?.()
           console.log('🔓 MetaMask locked status:', isUnlocked === false ? 'LOCKED' : 'unlocked')
           if (isUnlocked === false) {
-            throw new Error('MetaMask is locked. Please unlock it and try again.')
+            setError('MetaMask is locked. Please unlock it and try again.')
+            alert('MetaMask is locked. Please unlock it and try again.')
+            setIsConnecting(false)
+            return
           }
         } catch (e) {
           console.log('   Could not check lock status:', e.message)
@@ -111,7 +114,18 @@ export const WalletProvider = ({ children }) => {
           setTimeout(() => reject(new Error('Connection timeout. MetaMask popup did not appear. Please:\n1. Check if MetaMask is unlocked\n2. Look for MetaMask popup (might be hidden)\n3. Try disabling other wallet extensions temporarily')), 30000)
         )
         
-        const accounts = await Promise.race([accountsPromise, timeoutPromise])
+        let accounts
+        try {
+          accounts = await Promise.race([accountsPromise, timeoutPromise])
+        } catch (e) {
+          if (e.code === -32002) {
+            setError('Connection request pending. Please check your wallet extension.')
+            alert('Connection request pending. Please check your wallet extension.')
+            setIsConnecting(false)
+            return
+          }
+          throw e
+        }
         
         console.log('✅ Ethereum accounts received:', accounts)
         if (accounts && accounts.length > 0) {
@@ -121,22 +135,51 @@ export const WalletProvider = ({ children }) => {
       } else if (wallet.type === 'cardano') {
         console.log('₳ Connecting to Cardano wallet...')
         // Cardano wallets (Eternl, Nami, Yoroi)
-        const api = await wallet.provider.enable()
+        let api
+        try {
+          api = await wallet.provider.enable()
+        } catch (e) {
+          console.log('   enable() failed:', e)
+          throw e
+        }
         console.log('✅ Cardano API enabled:', api)
         
         // Get change address (most commonly used)
-        const changeAddress = await api.getChangeAddress()
+        let changeAddress = null
+        try {
+          changeAddress = await api.getChangeAddress()
+        } catch (e) {
+          console.log('   getChangeAddress failed:', e)
+          try {
+            const used = await api.getUsedAddresses()
+            changeAddress = used && used.length > 0 ? used[0] : null
+          } catch (e2) {
+            console.log('   getUsedAddresses failed:', e2)
+            try {
+              const rewards = await api.getRewardAddresses()
+              changeAddress = rewards && rewards.length > 0 ? rewards[0] : null
+            } catch (e3) {
+              console.log('   getRewardAddresses failed:', e3)
+            }
+          }
+        }
         console.log('📬 Cardano address:', changeAddress)
         
         if (changeAddress) {
           address = changeAddress
-          // Store Cardano API for later use
           setProvider({ cardanoApi: api, type: 'cardano', walletName: wallet.name })
+        } else {
+          throw new Error('Failed to obtain Cardano address from wallet')
         }
       } else if (wallet.type === 'solana') {
         console.log('👻 Connecting to Solana wallet...')
         // Solana wallets (Phantom)
-        const resp = await wallet.provider.connect()
+        const resp = await wallet.provider.connect().catch(async (e) => {
+          if (wallet.provider?.isConnected) {
+            return { publicKey: wallet.provider.publicKey }
+          }
+          throw e
+        })
         console.log('✅ Solana connected:', resp)
         if (resp?.publicKey) {
           address = resp.publicKey.toString()

@@ -1,12 +1,33 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { X, Wallet, ExternalLink } from 'lucide-react'
 
 const WalletModal = ({ isOpen, onClose, onSelectWallet }) => {
   const [availableWallets, setAvailableWallets] = useState([])
 
+  const discoveredProvidersRef = useRef([])
+
   useEffect(() => {
-    if (isOpen) {
-      detectWallets()
+    if (!isOpen) return
+
+    detectWallets()
+
+    // EIP-6963: Listen for announced EVM providers
+    const onAnnounce = (event) => {
+      const { provider, info } = event.detail || {}
+      if (!provider) return
+      // Avoid duplicates
+      if (!discoveredProvidersRef.current.find(p => p.provider === provider)) {
+        discoveredProvidersRef.current.push({ provider, info })
+        detectWallets() // refresh list with newly discovered provider
+      }
+    }
+
+    window.addEventListener('eip6963:announceProvider', onAnnounce)
+    // Request announcements
+    window.dispatchEvent(new Event('eip6963:requestProvider'))
+
+    return () => {
+      window.removeEventListener('eip6963:announceProvider', onAnnounce)
     }
   }, [isOpen])
 
@@ -26,19 +47,16 @@ const WalletModal = ({ isOpen, onClose, onSelectWallet }) => {
 
     // Helper to find specific provider
     const findProvider = (check) => {
-      if (!window.ethereum) return null
-      
-      // Check if there are multiple providers
-      if (window.ethereum.providers && window.ethereum.providers.length > 0) {
-        const found = window.ethereum.providers.find(check)
-        console.log('   findProvider result:', found ? 'found' : 'not found')
-        return found || null
-      }
-      
-      // Single provider
-      const result = check(window.ethereum) ? window.ethereum : null
-      console.log('   Single provider check:', result ? 'matched' : 'no match')
-      return result
+      // Prefer EIP-6963 discovered providers
+      const eipProviders = discoveredProvidersRef.current.map(p => p.provider)
+      const list = [
+        ...eipProviders,
+        ...(window.ethereum?.providers || []),
+        ...(window.ethereum ? [window.ethereum] : [])
+      ]
+      const found = list.find(check)
+      console.log('   findProvider result:', found ? 'found' : 'not found')
+      return found || null
     }
 
     // MetaMask
@@ -100,6 +118,21 @@ const WalletModal = ({ isOpen, onClose, onSelectWallet }) => {
 
     // Brave Wallet
     const braveProvider = findProvider(p => p.isBraveWallet)
+
+    // Any other EVM providers discovered via EIP-6963
+    const eipProviders = discoveredProvidersRef.current
+    eipProviders.forEach(({ provider, info }) => {
+      const alreadyListed = wallets.some(w => w.provider === provider)
+      if (alreadyListed) return
+      wallets.push({
+        id: info?.rdns || info?.uuid || 'evm-' + (info?.name || 'wallet'),
+        name: info?.name || 'EVM Wallet',
+        icon: '🪪',
+        installed: true,
+        type: 'ethereum',
+        provider
+      })
+    })
     if (braveProvider) {
       wallets.push({
         id: 'brave',
