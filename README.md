@@ -6,6 +6,10 @@ TrustLink is a fully decentralized proof and agreement platform that enables ind
 
 Built for **ETH Safari Hackathon 2025** | **Aqua Protocol Bounty Track**
 
+• Live Demo: [TrustLink – Confirm What’s Real](https://trustlink.vercel.app)
+
+• Repository: https://github.com/Edwin420s/trustlink
+
 ---
 
 ## 📋 Table of Contents
@@ -86,30 +90,12 @@ User Device → Hash Document Locally → Record Hash On-Chain → Permanent Pro
 
 ---
 
-## 🆕 What's New (v2.0)
+## 🆕 What’s Included
 
-### Enhanced Security
-- ✅ **Bilateral Acknowledgement** - Optional two-party proof confirmation
-- ✅ **Proof Revocation** - Ability to mark proofs as revoked
-- ✅ **Salted Hashing** - Privacy-enhanced hashing to prevent brute-force attacks
-- ✅ **Agreement Cancellation** - Proper lifecycle management
-
-### Improved UX
-- ✅ **Enhanced Verification States** - 5 clear states (verified, not found, revoked, pending, inactive)
-- ✅ **Proof Timeline** - Visual timeline showing agreement → proof → acknowledgement
-- ✅ **QR Code Sharing** - Generate scannable QR codes for easy verification
-- ✅ **Swahili Localization** - Full English + Swahili translation support
-
-### New Features
-- ✅ **Batch Verification** - Verify up to 50 documents at once
-- ✅ **Public Registry** - Browse publicly visible proofs
-- ✅ **View-Only Functions** - Gas-free verification reads
-- ✅ **Auto-Deployment** - Contract addresses auto-inject to frontend
-
-### Developer Experience
-- ✅ **Comprehensive Tests** - 40+ test cases covering all features
-- ✅ **CI/CD Pipeline** - Automated testing with GitHub Actions
-- ✅ **Enhanced Error Handling** - Clear custom errors
+- Core smart contracts for agreements and proofs
+- Privacy-first frontend (local hashing, no uploads)
+- Real on-chain interactions (create, accept, record, verify)
+- Multi-wallet support (MetaMask, Core, OKX, etc.)
 
 ---
 
@@ -705,21 +691,22 @@ Project Lead & Developer
 
 ### ETH Safari Hackathon 2025
 
-**Track**: Aqua Protocol Bounty  
-**Category**: UI/UX Improvement & Real-World Verification  
+**Event**: ETH Safari Hackathon 2025 (Virtual)  
+**Prize Pool**: $4,000  
+**Tracks**:  
+- Aqua Protocol Bounty — Improve the UI/UX of the Aqua Protocol website (Design Bounty)  
+- ETH Safari Evolution Challenge — Bold ideas to improve the hackathon experience (Winner gets a sponsored trip to DevCon 2025 in Argentina)  
 **Network**: EVM-Compatible (Linea Testnet)
 
-#### Innovation Highlights
-- ✨ Privacy-first design with zero data exposure
-- ✨ Clean, accessible UX for non-technical users
-- ✨ Real-world problem solving for African digital economy
-- ✨ Fully decentralized architecture
-- ✨ Production-ready code and documentation
+#### Highlights
+- Privacy-first design with zero data exposure
+- Clean, accessible UX for non-technical users
+- Fully decentralized architecture
+- Real-world impact focus for African ecosystem
 
 #### Demo Links
-- **Live App**: https://trustlink.vercel.app (Coming soon)
+- **Live App**: https://trustlink.vercel.app — TrustLink: Confirm What’s Real
 - **GitHub**: https://github.com/Edwin420s/trustlink
-- **Demo Video**: https://youtu.be/... (Coming soon)
 
 ---
 
