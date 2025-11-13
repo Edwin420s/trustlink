@@ -59,26 +59,29 @@ const WalletModal = ({ isOpen, onClose, onSelectWallet }) => {
       return found || null
     }
 
-    // MetaMask
-    const metaMaskProvider = findProvider(p => p.isMetaMask)
-    if (metaMaskProvider) {
-      wallets.push({
-        id: 'metamask',
-        name: 'MetaMask',
-        icon: '🦊',
-        installed: true,
-        type: 'ethereum',
-        provider: metaMaskProvider
-      })
-    } else {
-      wallets.push({
-        id: 'metamask',
-        name: 'MetaMask',
-        icon: '🦊',
-        installed: false,
-        type: 'ethereum',
-        installUrl: 'https://metamask.io/download/'
-      })
+    // MetaMask (avoid duplicate when announced via EIP-6963)
+    const hasEipMetaMask = discoveredProvidersRef.current.some(({ provider, info }) => info?.name === 'MetaMask' || provider?.isMetaMask)
+    if (!hasEipMetaMask) {
+      const metaMaskProvider = findProvider(p => p.isMetaMask)
+      if (metaMaskProvider) {
+        wallets.push({
+          id: 'metamask',
+          name: 'MetaMask',
+          icon: '🦊',
+          installed: true,
+          type: 'ethereum',
+          provider: metaMaskProvider
+        })
+      } else {
+        wallets.push({
+          id: 'metamask',
+          name: 'MetaMask',
+          icon: '🦊',
+          installed: false,
+          type: 'ethereum',
+          installUrl: 'https://metamask.io/download/'
+        })
+      }
     }
 
     // Coinbase Wallet

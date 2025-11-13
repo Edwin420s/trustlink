@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react'
-import { Plus, Search } from 'lucide-react'
+import { Plus, Search, Users } from 'lucide-react'
 import { useWallet } from '../contexts/WalletContext'
 import AgreementCard from '../components/AgreementCard'
 import Modal from '../components/Modal'
+import { useContracts } from '../hooks/useContracts'
+import { getTrustLinkContract } from '../utils/contract'
+import { CONTRACT_ADDRESSES } from '../utils/constants'
 
 const Agreements = () => {
   const { account, isConnected, provider } = useWallet()
+  const { createNewAgreement, acceptExistingAgreement } = useContracts()
   const [agreements, setAgreements] = useState([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newPartner, setNewPartner] = useState('')
@@ -19,44 +23,39 @@ const Agreements = () => {
   }, [isConnected])
 
   const loadAgreements = async () => {
-    // Mock data - in real app, fetch from contract
-    setAgreements([
-      {
-        id: 1,
-        initiator: account,
-        partner: '0x7421d123456789abcdef123456789abcdef12345',
-        isActive: true,
-        createdAt: Math.floor(Date.now() / 1000) - 86400
-      },
-      {
-        id: 2,
-        initiator: '0x7421d123456789abcdef123456789abcdef12345',
-        partner: account,
-        isActive: false,
-        createdAt: Math.floor(Date.now() / 1000) - 172800
+    try {
+      if (!CONTRACT_ADDRESSES.trustLinkCore) return
+      let browserProvider = provider
+      if (!browserProvider && typeof window !== 'undefined' && window.ethereum) {
+        const { ethers } = await import('ethers')
+        browserProvider = new ethers.BrowserProvider(window.ethereum)
       }
-    ])
+      if (!browserProvider) return
+      const contract = getTrustLinkContract(browserProvider, CONTRACT_ADDRESSES.trustLinkCore)
+      const ids = await contract.getUserAgreements(account)
+      const items = []
+      for (const id of ids) {
+        const ag = await contract.getAgreement(id)
+        items.push({
+          id: Number(ag.id ?? id),
+          initiator: ag.initiator,
+          partner: ag.partner,
+          isActive: ag.isActive,
+          createdAt: Number(ag.createdAt)
+        })
+      }
+      items.sort((a,b)=>b.createdAt - a.createdAt)
+      setAgreements(items)
+    } catch (e) {
+      console.error('Failed to load agreements:', e)
+    }
   }
 
   const createAgreement = async (partnerAddress) => {
     setIsLoading(true)
     try {
-      // In real app: await createAgreement(contract, partnerAddress, signer)
-      console.log('Creating agreement with:', partnerAddress)
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // Add mock agreement
-      const newAgreement = {
-        id: agreements.length + 1,
-        initiator: account,
-        partner: partnerAddress,
-        isActive: false,
-        createdAt: Math.floor(Date.now() / 1000)
-      }
-      
-      setAgreements(prev => [newAgreement, ...prev])
+      await createNewAgreement(partnerAddress)
+      await loadAgreements()
       setIsModalOpen(false)
       setNewPartner('')
     } catch (error) {
@@ -69,15 +68,8 @@ const Agreements = () => {
 
   const acceptAgreement = async (agreementId) => {
     try {
-      // In real app: await acceptAgreement(contract, agreementId, signer)
-      console.log('Accepting agreement:', agreementId)
-      
-      // Update local state
-      setAgreements(prev => 
-        prev.map(ag => 
-          ag.id === agreementId ? { ...ag, isActive: true } : ag
-        )
-      )
+      await acceptExistingAgreement(agreementId)
+      await loadAgreements()
     } catch (error) {
       console.error('Error accepting agreement:', error)
       alert('Failed to accept agreement. Please try again.')

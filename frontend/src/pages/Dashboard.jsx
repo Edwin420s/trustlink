@@ -2,26 +2,84 @@ import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { FileText, Users, CheckCircle, Clock } from 'lucide-react'
 import { useWallet } from '../contexts/WalletContext'
+import { getTrustLinkContract } from '../utils/contract'
+import { CONTRACT_ADDRESSES } from '../utils/constants'
 
 const Dashboard = () => {
-  const { account, isConnected } = useWallet()
+  const { account, isConnected, provider } = useWallet()
   const [stats, setStats] = useState({
     activeAgreements: 0,
     proofsRecorded: 0,
     pendingRequests: 0
   })
+  const [activity, setActivity] = useState([])
 
   useEffect(() => {
-    // In a real app, you would fetch these from your contract
-    // For now, we'll use mock data
-    if (isConnected) {
-      setStats({
-        activeAgreements: 2,
-        proofsRecorded: 5,
-        pendingRequests: 1
-      })
+    let unsub = () => {}
+    const run = async () => {
+      if (!isConnected || !account || !CONTRACT_ADDRESSES.trustLinkCore) return
+      let browserProvider = provider
+      if (!browserProvider && typeof window !== 'undefined' && window.ethereum) {
+        const { ethers } = await import('ethers')
+        browserProvider = new ethers.BrowserProvider(window.ethereum)
+      }
+      if (!browserProvider) return
+      const contract = getTrustLinkContract(browserProvider, CONTRACT_ADDRESSES.trustLinkCore)
+      try {
+        const ids = await contract.getUserAgreements(account)
+        let active = 0
+        for (const id of ids) {
+          const ag = await contract.getAgreement(id)
+          if (ag.isActive) active += 1
+        }
+        setStats(s => ({ ...s, activeAgreements: Number(active) }))
+      } catch {}
+      try {
+        const filter = contract.filters.ProofRecorded(null, null, account)
+        const logs = await contract.queryFilter(filter, 0, 'latest')
+        setStats(s => ({ ...s, proofsRecorded: logs.length }))
+      } catch {}
+      setStats(s => ({ ...s, pendingRequests: 0 }))
+      const onProof = (agreementId, documentHash, submittedBy) => {
+        setActivity(a => [{
+          type: 'proof',
+          title: `Proof recorded for Agreement #${Number(agreementId)}`,
+          icon: 'proof',
+          ts: Date.now()
+        }, ...a].slice(0, 20))
+        setStats(s => ({ ...s, proofsRecorded: s.proofsRecorded + (submittedBy?.toLowerCase?.() === account.toLowerCase() ? 1 : 0) }))
+      }
+      const onAgreementCreated = (id, initiator, partner) => {
+        if (initiator?.toLowerCase?.() === account.toLowerCase() || partner?.toLowerCase?.() === account.toLowerCase()) {
+          setActivity(a => [{
+            type: 'agreement',
+            title: `Agreement #${Number(id)} created`,
+            icon: 'agreement',
+            ts: Date.now()
+          }, ...a].slice(0, 20))
+        }
+      }
+      const onAgreementAccepted = (id, partner) => {
+        setActivity(a => [{
+          type: 'accepted',
+          title: `Agreement #${Number(id)} accepted`,
+          icon: 'accepted',
+          ts: Date.now()
+        }, ...a].slice(0, 20))
+        setStats(s => ({ ...s, activeAgreements: s.activeAgreements + 1 }))
+      }
+      contract.on('ProofRecorded', onProof)
+      contract.on('AgreementCreated', onAgreementCreated)
+      contract.on('AgreementAccepted', onAgreementAccepted)
+      unsub = () => {
+        contract.off('ProofRecorded', onProof)
+        contract.off('AgreementCreated', onAgreementCreated)
+        contract.off('AgreementAccepted', onAgreementAccepted)
+      }
     }
-  }, [isConnected])
+    run()
+    return () => unsub()
+  }, [isConnected, account, provider])
 
   const quickActions = [
     {
@@ -151,29 +209,27 @@ const Dashboard = () => {
         <h3 className="text-lg font-semibold text-primary-700 mb-4">
           Recent Activity
         </h3>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between py-2 border-b border-primary-100">
-            <div className="flex items-center space-x-3">
-              <CheckCircle className="h-5 w-5 text-green-500" />
-              <span className="text-primary-700">Proof recorded for Agreement #123</span>
-            </div>
-            <span className="text-sm text-primary-500">2 hours ago</span>
+        {activity.length === 0 ? (
+          <div className="text-primary-500 text-sm">No activity yet.</div>
+        ) : (
+          <div className="space-y-3">
+            {activity.map((item, idx) => (
+              <div key={idx} className="flex items-center justify-between py-2 border-b border-primary-100 last:border-b-0">
+                <div className="flex items-center space-x-3">
+                  {item.icon === 'proof' ? (
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                  ) : item.icon === 'agreement' ? (
+                    <Users className="h-5 w-5 text-blue-500" />
+                  ) : (
+                    <FileText className="h-5 w-5 text-primary-500" />
+                  )}
+                  <span className="text-primary-700">{item.title}</span>
+                </div>
+                <span className="text-sm text-primary-500">just now</span>
+              </div>
+            ))}
           </div>
-          <div className="flex items-center justify-between py-2 border-b border-primary-100">
-            <div className="flex items-center space-x-3">
-              <Users className="h-5 w-5 text-blue-500" />
-              <span className="text-primary-700">New agreement request from 0x7421...</span>
-            </div>
-            <span className="text-sm text-primary-500">1 day ago</span>
-          </div>
-          <div className="flex items-center justify-between py-2">
-            <div className="flex items-center space-x-3">
-              <FileText className="h-5 w-5 text-primary-500" />
-              <span className="text-primary-700">Document verified successfully</span>
-            </div>
-            <span className="text-sm text-primary-500">3 days ago</span>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   )
