@@ -6,7 +6,7 @@ TrustLink is a fully decentralized proof and agreement platform that enables ind
 
 Built for **ETH Safari Hackathon 2025** | **Aqua Protocol Bounty Track**
 
-• Live Demo: [TrustLink – Confirm What’s Real](https://trustlink.vercel.app)
+• Live Demo: [TrustLink – Confirm What’s Real](https://trustlink-fawn.vercel.app/)
 
 ---
 
@@ -717,8 +717,8 @@ Project Lead & Developer
 - Real-world impact focus for African ecosystem
 
 #### Demo Links
-- **Live App**: https://trustlink.vercel.app — TrustLink: Confirm What’s Real
-- **GitHub**: https://github.com/Edwin420s/trustlink
+- **Live App**: https://trustlink-fawn.vercel.app/ — TrustLink: Confirm What’s Real
+
 
 ---
 
